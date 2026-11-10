@@ -1,353 +1,222 @@
+
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="短押し・２回押し・長押しで遊べる、光美容器のシミュレーター。">
-<title>つるるん！ 光美容器シミュレーター</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;color:var(--ink);background:var(--paper);font:15px/1.65 "Hiragino Sans","Yu Gothic",sans-serif;transition:background .4s,color .4s}
-body[data-state=off]{--paper:#f5f4ee;--ink:#365675;--wash:#e2e9ed;--accent:#527899;--rule:#a8bac7;--halo:#fafbfa;--shell:#e1e8ee}
-body[data-state=low]{--paper:#faeeec;--ink:#743f4f;--wash:#eed6d8;--accent:#985b6a;--rule:#cfa8b1;--halo:#fff5f1;--shell:#e8c3c9}
-body[data-state=high]{--paper:#f2e3eb;--ink:#63334f;--wash:#ddbfce;--accent:#88466c;--rule:#b98ca4;--halo:#f6e3ea;--shell:#ca9db6}
-main{max-width:1120px;margin:auto;padding:30px 42px}
-header,footer{display:flex;justify-content:space-between;gap:16px;font-size:11px;letter-spacing:.16em}
-header{border-bottom:1px solid var(--rule);padding-bottom:13px}
-.layout{display:grid;grid-template-columns:1fr 1fr;gap:55px;align-items:center;padding:36px 0}
-.kicker,.label{letter-spacing:.18em;font-size:11px;font-weight:700}
-h1{font:900 clamp(47px,7.8vw,96px)/1.12 "Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic",sans-serif;letter-spacing:-.09em;margin:12px 0 18px;transform:rotate(-4deg);transform-origin:left center}
-h1 span{display:inline-block;color:var(--accent);transform:rotate(12deg);margin-left:.06em}
-h2{font-size:17px;font-weight:500;letter-spacing:.16em;margin:0 0 27px}
-.readout{padding:16px 0;border-block:1px solid var(--rule);min-height:112px}
-.readout strong{display:block;font-size:25px;margin-top:3px}
-.readout p{margin:0}
-ol{list-style:none;padding:0;margin:19px 0 0;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-li{font-size:12px}
-li span{display:block;font:italic 20px Georgia,serif;margin-bottom:4px}
-li[aria-current=true]{font-weight:700;text-decoration:underline;text-underline-offset:5px}
-figure{position:relative;margin:0;min-height:490px;background:radial-gradient(ellipse at 51% 45%,var(--halo),var(--wash) 75%);display:grid;place-items:center;overflow:hidden}
-figure:before{content:"";position:absolute;width:75%;aspect-ratio:1;border:1px solid var(--rule);border-radius:50%}
-.device{position:relative;width:128px;height:318px;border-radius:63px 63px 48px 48px;background:linear-gradient(100deg,var(--shell),#fff8f2 45%,var(--shell));border:1px solid var(--rule);box-shadow:18px 22px 28px #49394b26;transform:rotate(-12deg);display:flex;flex-direction:column;align-items:center;padding:28px 0}
-.window{width:78px;height:41px;border-radius:15px;background:var(--accent);border:7px solid var(--halo);box-shadow:0 0 0 1px var(--rule)}
-.meter{display:flex;gap:6px;margin-top:45px}
-.meter i{width:7px;height:7px;border-radius:50%;border:1px solid var(--accent)}
-body[data-state=low] .meter i:first-child,body[data-state=high] .meter i{background:var(--accent);box-shadow:0 0 9px var(--accent)}
-button{touch-action:manipulation;user-select:none}
-#power{margin-top:14px;border-radius:50%;width:54px;height:54px;border:1px solid var(--accent);color:var(--ink);background:var(--halo);font-size:25px;cursor:pointer}
-#power:active{transform:scale(.93)}
-button:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
-.device small{position:absolute;bottom:23px;font-size:12px;font-weight:700;letter-spacing:.06em}
-figcaption{position:absolute;bottom:14px;left:17px;font-size:10px;letter-spacing:.14em}
-footer{border-top:1px solid var(--rule);padding-top:13px;align-items:center;flex-wrap:wrap}
-#direct{border:1px solid var(--rule);background:transparent;color:inherit;padding:6px 10px;cursor:pointer}
-@media(max-width:730px){main{padding:22px}.layout{grid-template-columns:1fr;gap:22px;padding:23px 0}figure{min-height:380px;grid-row:2}.device{height:275px}.meter{margin-top:29px}}
-@media(prefers-reduced-motion:reduce){body{transition:none}}
-
-/* Winter magazine cover */
-header{align-items:center}
-.cover-name{font-size:17px;font-weight:800;letter-spacing:.08em}
-.issue{display:block;font-size:10px;font-weight:500;letter-spacing:.16em}
-.cover-line{font:700 clamp(20px,3.6vw,39px)/1.35 "Hiragino Mincho ProN","Yu Mincho",serif;letter-spacing:.04em;margin:0 0 24px}
-.cover-line span{display:block}
-.cover-line em{font-style:normal;color:var(--accent)}
-.kicker{display:inline-block;border-block:1px solid var(--rule);padding:4px 0}
-h1{font-size:clamp(42px,6.7vw,87px)}
-figure{min-height:530px}
-.cover-note{position:absolute;top:22px;left:21px;font-size:12px;letter-spacing:.12em}
-.cover-note strong{display:block;font:italic 46px/.95 Georgia,serif;letter-spacing:-.05em;margin-top:5px}
-.cover-seal{position:absolute;right:18px;bottom:43px;width:91px;aspect-ratio:1;border:1px solid var(--accent);border-radius:50%;display:grid;place-content:center;text-align:center;font-size:11px;line-height:1.55;background:var(--halo);transform:rotate(9deg)}
-@media(max-width:730px){figure{min-height:390px}.cover-note{top:15px;left:14px}.cover-note strong{font-size:34px}.cover-seal{width:74px;right:12px;bottom:31px;font-size:10px}}
-
-figure{isolation:isolate}
-.portrait{position:absolute;z-index:-1;width:79%;height:91%;left:-3%;bottom:0;color:var(--ink);opacity:.83}
-.device{margin-left:48%;margin-top:16%;transform:rotate(12deg) scale(.87)}
-.cover-note{letter-spacing:.08em}
-.cover-note strong{font-size:30px}
-.cover-seal{top:18px;right:15px;bottom:auto;width:83px;font-weight:700}
-.cover-tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
-.cover-tags span{border:1px solid var(--rule);border-radius:30px;padding:3px 10px;font-size:12px;font-weight:700}
-.cover-line{margin-bottom:12px}
-@media(max-width:730px){.device{margin-top:10%;transform:rotate(12deg) scale(.78)}.cover-seal{top:12px;width:70px}.cover-note strong{font-size:23px}}
-
-/* An open magazine, with a narrow glimpse of the facing page. */
-body{background:radial-gradient(ellipse at 50% 35%,var(--halo),var(--wash) 95%)}
-.magazine{max-width:1210px;margin:clamp(22px,5vw,70px) auto;padding:0 24px 15px;display:grid;grid-template-columns:clamp(20px,6vw,83px) minmax(0,1fr);filter:drop-shadow(0 14px 18px #42324525)}
-.facing-page{position:relative;min-width:0;border:1px solid var(--rule);border-right:0;border-radius:13px 0 0 10px;background:linear-gradient(90deg,var(--paper) 65%,var(--wash) 97%);box-shadow:-2px 4px 0 -1px var(--halo),-4px 8px 0 -2px var(--rule)}
-.facing-page span{position:absolute;bottom:29px;left:50%;transform:translateX(-50%);font:italic 13px Georgia,serif}
-.magazine main{width:100%;min-width:0;max-width:none;position:relative;border:1px solid var(--rule);border-radius:0 13px 10px 0;background:linear-gradient(90deg,var(--wash) 0,var(--paper) 26px);box-shadow:2px 4px 0 -1px var(--halo),4px 7px 0 -2px var(--rule),5px 10px 0 -3px var(--paper),6px 12px 0 -4px var(--rule)}
-.magazine main::before{content:"";position:absolute;inset:0 auto 0 -1px;width:5px;pointer-events:none;background:linear-gradient(90deg,transparent,var(--ink),transparent);opacity:.24}
-.page-number{margin-left:auto;font:italic 15px Georgia,serif}
-@media(max-width:730px){.magazine{padding-inline:11px;grid-template-columns:15px minmax(0,1fr)}.magazine main{padding-inline:17px;background:linear-gradient(90deg,var(--wash),var(--paper) 13px)}.facing-page span{display:none}}
-
-.layout{position:relative;display:grid;grid-template-columns:minmax(0,1fr);gap:14px;padding:18px 0}
-.layout section{grid-area:1/1;align-self:start;justify-self:start;z-index:2;margin:45px 0 0 5%;max-width:51%;pointer-events:none}
-figure{grid-area:1/1;min-height:515px}
-.interaction{grid-area:2/1;display:grid;grid-template-columns:1.15fr 1fr;align-items:center;gap:30px}
-.interaction ol{margin:0}
-.readout{min-height:0;padding:8px 0}
-.readout strong{font-size:20px}
-.portrait{left:26%;width:59%;height:100%;bottom:-3%}
-.device{margin-left:67%;margin-top:12%}
-.cover-note{top:auto;bottom:40px;left:auto;right:19px;text-align:right}
-.cover-line{font-size:clamp(20px,2.75vw,36px)}
-h1{font-size:clamp(42px,6.1vw,80px)}
-.desserts{position:absolute;inset:0;width:100%;height:100%;opacity:.26;z-index:-1;pointer-events:none}
-@media(max-width:730px){
-  figure{min-height:470px}
-  .layout section{margin:26px 0 0 5%;max-width:77%}
-  .layout h2{font-size:12px}
-  .portrait{left:0;width:85%;height:72%;bottom:-2%}
-  .device{margin-left:58%;margin-top:132px;transform:rotate(12deg) scale(.66)}
-  .cover-seal{width:55px;font-size:8px;right:7px}
-  .cover-note{bottom:24px;font-size:9px}
-  .interaction{grid-template-columns:1fr;gap:12px}
-  .desserts{width:125%;left:-12.5%;opacity:.22}
-}
-
-/* Full-page beauty feature */
-.magazine{max-width:940px}
-.magazine main{padding-inline:clamp(14px,3vw,32px)}
-figure{min-height:0;aspect-ratio: 4 / 5;background:radial-gradient(ellipse at 65% 42%,var(--halo) 5%,var(--paper) 39%,var(--wash) 90%)}
-figure::before{display:none}
-.portrait{width:104%;height:112%;left:13%;bottom:2%;opacity:.62}
-.layout section{align-self:start;justify-self:stretch;margin:29% 8% 0;max-width:none;text-align:center}
-.kicker{font-size:clamp(9px,1.4vw,12px)}
-h1{font-size:clamp(32px,6vw,74px);transform:none;letter-spacing:-.045em;margin:6px 0}
-.cover-line{font-size:clamp(16px,3vw,33px);line-height:1.3}
-.cover-line span{display:inline}
-.cover-tags{justify-content:center;margin-bottom:8px}
-.cover-tags span{background:var(--paper)}
-.layout h2{font-size:clamp(9px,1.4vw,13px);margin:0}
-.device{position:absolute;top:51%;left:22%;margin:0;transform:rotate(-9deg) scale(1.4);transform-origin:top center}
-.cover-note{top:65%;bottom:auto;left:6%;right:auto;text-align:left;line-height:1.25}
-.cover-note strong{font-size:clamp(25px,5vw,54px)}
-.vertical-note{position:absolute;top:61%;left:56%;writing-mode:vertical-rl;font-size:clamp(9px,1.5vw,13px);letter-spacing:.12em;pointer-events:none}
-.editors-note{position:absolute;right:7%;bottom:12%;width:29%;border:1px solid var(--rule);padding:8px 10px;background:var(--halo);font-size:clamp(9px,1.4vw,13px);line-height:1.55}
-.editors-note strong{display:block;margin-bottom:4px}
-.desserts{opacity:.32}
-@media(max-width:730px){
- figure{min-height:410px}
- .layout section{margin-top:clamp(88px,29%,210px)}
- .device{top:59%;left:23%;transform:rotate(-9deg) scale(.51)}
- .portrait{width:118%;height:105%;left:2%;bottom:8%}
- .cover-note{left:5%}
- .vertical-note{left:52%}
- .editors-note{right:4%;bottom:8%;width:31%;padding:5px}
-}
-
-/* Separate the printed paper, illustration ink, and product finish. */
-body[data-state=off]{--print:#254866;--page-glow:#fcfaf3;--page-tint:#e9edf0;--product-edge:#4b6780;--product-body:#98b5cb;--lens:#9ac9e1}
-body[data-state=low]{--print:#73384c;--page-glow:#fff7f1;--page-tint:#f2dfde;--product-edge:#8a4d67;--product-body:#d292a6;--lens:#ffc7bd}
-body[data-state=high]{--print:#633051;--page-glow:#faf1f5;--page-tint:#ead7e3;--product-edge:#673552;--product-body:#b679a2;--lens:#ed9dc5}
-figure{background:radial-gradient(ellipse at 60% 39%,var(--page-glow) 22%,var(--page-tint) 93%)}
-.portrait{color:var(--print);opacity:.94}
-.portrait path{stroke-width:2.25}
-.desserts{opacity:.23}
-.device{width:132px;height:238px;padding:0;border-radius:35px 35px 48px 48px;border:1px solid var(--product-edge);background:linear-gradient(105deg,var(--product-edge),var(--product-body) 14%,var(--page-glow) 43%,var(--product-body) 76%,var(--product-edge));box-shadow:inset 0 1px 3px #fff9,10px 16px 22px #33233955}
-.device-head{position:relative;width:calc(100% + 20px);height:68px;flex:none;margin-top:-8px;display:grid;place-items:center;border:1px solid var(--product-edge);border-radius:23px 23px 29px 29px;background:linear-gradient(165deg,#fff9,var(--product-body) 41%,var(--product-edge));box-shadow:0 5px 7px #32213833,inset 0 2px 3px #fff9}
-.window{position:relative;width:106px;height:38px;border:5px solid #f4ecf2;border-radius:13px;background:linear-gradient(155deg,#1e2433,#485469);box-shadow:0 0 0 1px var(--product-edge),inset 0 2px 5px #131727}
-.window::after{content:"";position:absolute;inset:6px 9px;border-radius:4px;background:linear-gradient(180deg,#fff9,transparent 37%),var(--lens);opacity:.72}
-body[data-state=low] .window::after,body[data-state=high] .window::after{opacity:1;box-shadow:0 0 10px var(--lens)}
-.meter{margin-top:25px}
-#power{margin-top:12px;background:var(--page-glow);border-color:var(--product-edge);color:var(--print);box-shadow:0 2px 5px #33233930}
-.device small{bottom:19px;color:var(--print)}
-@media(max-width:730px){.device{transform:rotate(-9deg) scale(.92);left:14%;top:52%}}
-@media(max-width:480px){figure{min-height:490px}.vertical-note{left:60%}.editors-note{width:26%}}
-
-body[data-state=off]{--spot:#fdfdff;--spot-rim:#c9dcea}
-body[data-state=low]{--spot:#fff6f2;--spot-rim:#ebbac7}
-body[data-state=high]{--spot:#fff0f8;--spot-rim:#d7a4c4}
-.product-light{position:absolute;top:43%;left:9%;width:57%;height:57%;border-radius:50%;pointer-events:none;transform:rotate(-12deg);background:radial-gradient(ellipse,var(--spot) 14%,var(--spot-rim) 49%,transparent 72%);opacity:.88}
-.device{z-index:1}
-.power-caption{position:absolute;left:calc(50% + 32px);top:124px;white-space:nowrap;display:flex;align-items:center;gap:4px;color:var(--print);font-size:9px;font-weight:700;letter-spacing:.04em;background:var(--page-glow);padding:2px 5px 2px 0;border-radius:0 9px 9px 0;transform:rotate(9deg);transform-origin:left center;pointer-events:none}
-.power-caption::before{content:"";width:12px;border-top:1px solid currentColor}
-#power:active{background:var(--lens);box-shadow:0 0 12px var(--lens)}
-@media(max-width:730px){.product-light{left:1%;width:71%;top:47%;height:51%}.power-caption{font-size:10px}}
-
-.editors-note{z-index:2}
-.editors-note #direct{display:flex;align-items:center;justify-content:space-between;gap:5px;width:100%;margin-top:7px;border:1px solid var(--accent);border-radius:7px;background:var(--wash);color:var(--print);font-family:inherit;font-size:inherit;font-weight:700;text-align:left}
-.editors-note #direct:hover,.editors-note #direct:active{background:var(--spot-rim)}
-.editors-note #direct span:last-child{flex:none}
-@media(max-width:480px){.editors-note #direct{padding:4px;font-size:9px}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="短押し・２回押し・長押しで遊べる、光美容器のシミュレーター。">
+  <title>つるるん！ 光美容器シミュレーター</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body data-state="off">
-<div class="magazine">
-<div class="facing-page" aria-hidden="true"><span>24</span></div>
-<main>
-<header><span class="cover-name">暮らしの道具帖 <span class="issue">週刊・冬の特別号</span></span><span>ひよりスタジオ</span></header>
-<div class="layout">
-<section aria-labelledby="title">
-<div class="kicker">冬のおすすめ美容アイテム</div>
-<h1 id="title">つるるん<span>！</span></h1>
-<p class="cover-line"><span>この冬、<em>毛穴レス</em>な印象へ。</span><span>透けるようなツヤ肌。</span></p>
-<div class="cover-tags"><span>＋かわいい</span><span>＋好印象</span></div>
-<h2>おうち美容 ｜ 光美容器シミュレーター</h2>
-</section>
-<div class="interaction">
-<div class="readout" aria-live="polite">
-<div class="label">いまの状態 / <span id="mode">おやすみ中</span></div>
-<strong id="state">電源オフ</strong>
-<p id="hint">電源ボタンを１回押すと、弱モードでスタート！</p>
-</div>
-<ol aria-label="使い方">
-<li><span>01</span>１回押しで弱</li>
-<li><span>02</span>２回押しで強</li>
-<li><span>03</span>長押しでオフ</li>
-</ol>
-</div>
-<figure aria-label="横顔のラインアートと光美容器">
-<div class="cover-note">冬のおうち美容<strong>01</strong></div>
-<svg class="desserts" viewBox="0 0 640 520" fill="none" aria-hidden="true">
-  <g stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Strawberry shortcake -->
-    <path d="M45 400l47-21 38 22-48 17z M45 400v24l37 19 48-17v-25 M82 418v25 M46 413l36 18 47-17"/>
-    <path d="M76 389c-8-9 0-17 6-13 8-8 18 1 8 10l-7 7z M82 375l-3-7m3 7 6-6"/>
-    <path d="M65 402l3-1m14 5 3-1m9-8 3-1"/>
-    <!-- Strawberry parfait -->
-    <path d="M548 143h54l-8 36q-4 15-19 15t-19-15z M575 194v19m-15 2h30 M553 163q12-8 22 0t22 0"/>
-    <path d="M548 143q-2-12 12-16-2-11 13-12 0-10 10-12-2 10 8 15 12 5 11 25 M588 116l10-25"/>
-    <!-- Bath bubbles and tile lines -->
-    <circle cx="106" cy="83" r="9"/><circle cx="127" cy="65" r="4"/>
-    <circle cx="515" cy="373" r="12"/><circle cx="538" cy="354" r="6"/><circle cx="531" cy="398" r="4"/>
-    <path d="M559 440h64m-64 15h64m-50-29v43m19-43v43m19-43v43" opacity=".55"/>
-  </g>
-</svg>
-<svg class="portrait" viewBox="0 0 335 460" fill="none" aria-hidden="true">
-  <path d="M278 57
-    C232 83 202 129 151 151
-    C115 167 85 165 67 143
-    C57 131 53 117 51 107
-    C84 120 105 143 110 169
-    C116 196 103 221 94 239
-    C89 250 101 253 113 252
-    C125 251 127 260 127 270
-    C127 279 135 282 143 278
-    C152 273 163 273 172 275
-    C163 274 151 276 148 282
-    C145 289 151 295 158 294
-    C163 294 167 290 171 291
-    C182 295 180 310 182 323
-    C184 335 196 338 210 331
-    C243 315 263 278 274 245
-    C281 225 274 207 262 207
-    C247 207 239 228 245 247
-    C252 275 278 295 288 321
-    C307 370 255 379 203 387
-    C157 395 128 402 122 429
-    C118 440 118 450 119 458"
-    stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-<div class="product-light" aria-hidden="true"></div>
-<div class="device">
-<div class="device-head" aria-hidden="true"><div class="window"></div></div>
-<div class="meter" aria-hidden="true"><i></i><i></i></div>
-<button id="power" type="button" aria-label="電源ボタン。１回押すと弱、弱のときに素早く２回押すと強、長押しで電源オフ。">⏻</button>
-<span class="power-caption" aria-hidden="true">ここを押して</span>
-<small>つるるん</small>
-</div>
-<div class="vertical-note">お風呂あがりの美容時間</div>
-<div class="editors-note"><strong>編集部メモ</strong>冬色のページを着替えてみて。<button id="direct" type="button"><span id="direct-label">電源を入れる（弱）</span><span aria-hidden="true">↗</span></button></div>
-<div class="cover-seal">創刊25周年<br>特別記念号</div>
-<figcaption>図１ ／ 冬のおうち美容</figcaption>
-</figure>
-</div>
-<footer><span>色でわかる、光美容器のモード切り替え</span><span class="page-number" aria-label="25ページ">25</span></footer>
-</main>
-</div>
-<script>
-const power = document.querySelector("#power");
-const direct = document.querySelector("#direct");
-const steps = document.querySelectorAll("li");
-const holdDuration = 650;
-const doubleClickWindow = 380;
-let state = "off";
-let previousTap = -Infinity;
-let holdTimer;
-let activePress = null;
+  <div class="magazine">
+    <div class="facing-page" aria-hidden="true">
+      <span>24</span>
+    </div>
 
-const displays = {
-  off: ["おやすみ中", "電源オフ", "電源ボタンを１回押すと、弱モードでスタート！", "電源を入れる（弱）", 2],
-  low: ["ほんのりピンク", "弱モード", "素早く２回押すと強モード。約0.65秒の長押しで電源オフ。", "強モードに切り替える", 0],
-  high: ["じんわりプラム", "強モード", "約0.65秒長押しすると、青い文字の電源オフ画面に戻ります。", "電源オフ", 1]
-};
+    <main>
+      <header>
+        <span class="cover-name">
+          暮らしの道具帖
+          <span class="issue">週刊・冬の特別号</span>
+        </span>
+        <span>ひよりスタジオ</span>
+      </header>
 
-function changeState(nextState) {
-  state = nextState;
-  previousTap = -Infinity;
-  document.body.dataset.state = state;
-  const [mode, name, hint, action, step] = displays[state];
-  document.querySelector("#mode").textContent = mode;
-  document.querySelector("#state").textContent = name;
-  document.querySelector("#hint").textContent = hint;
-  document.querySelector("#direct-label").textContent = action;
-  steps.forEach((item, index) => {
-    item.setAttribute("aria-current", String(index === step && state !== "off"));
-  });
-}
+      <div class="layout">
+        <section aria-labelledby="title">
+          <div class="kicker">冬のおすすめ美容アイテム</div>
 
-function tap() {
-  const now = performance.now();
-  if (state === "off") {
-    changeState("low");
-  } else if (state === "low") {
-    if (now - previousTap <= doubleClickWindow) {
-      changeState("high");
-    } else {
-      previousTap = now;
-    }
-  }
-}
+          <h1 id="title">つるるん<span>！</span></h1>
 
-function startPress(id) {
-  if (activePress !== null) return;
-  activePress = { id, held: false };
-  holdTimer = setTimeout(() => {
-    activePress.held = true;
-    previousTap = -Infinity;
-    if (state !== "off") changeState("off");
-  }, holdDuration);
-}
+          <p class="cover-line">
+            <span>この冬、<em>毛穴レス</em>な印象へ。</span>
+            <span>透けるようなツヤ肌。</span>
+          </p>
 
-function finishPress(id, cancelled = false) {
-  if (activePress === null || activePress.id !== id) return;
-  clearTimeout(holdTimer);
-  const { held } = activePress;
-  activePress = null;
-  if (!held && !cancelled) tap();
-}
+          <div class="cover-tags">
+            <span>＋かわいい</span>
+            <span>＋好印象</span>
+          </div>
 
-power.addEventListener("pointerdown", event => {
-  if (event.button !== 0 || !event.isPrimary || activePress !== null) return;
-  power.setPointerCapture(event.pointerId);
-  startPress(event.pointerId);
-});
-power.addEventListener("pointerup", event => finishPress(event.pointerId));
-power.addEventListener("pointercancel", event => finishPress(event.pointerId, true));
-power.addEventListener("lostpointercapture", event => finishPress(event.pointerId, true));
-power.addEventListener("contextmenu", event => event.preventDefault());
+          <h2>おうち美容 ｜ 光美容器シミュレーター</h2>
+        </section>
 
-power.addEventListener("keydown", event => {
-  if (event.key !== " " && event.key !== "Enter") return;
-  event.preventDefault();
-  if (!event.repeat) startPress(event.key);
-});
-power.addEventListener("keyup", event => {
-  if (event.key !== " " && event.key !== "Enter") return;
-  event.preventDefault();
-  finishPress(event.key);
-});
-power.addEventListener("blur", () => finishPress(activePress?.id, true));
-power.addEventListener("click", event => {
-  if (event.detail === 0 && activePress === null) tap();
-});
-direct.addEventListener("click", () => {
-  if (activePress !== null) finishPress(activePress.id, true);
-  if (state === "off") changeState("low");
-  else if (state === "low") changeState("high");
-  else changeState("off");
-});
-</script>
+        <div class="interaction">
+          <div class="readout" aria-live="polite">
+            <div class="label">
+              いまの状態 / <span id="mode">おやすみ中</span>
+            </div>
+            <strong id="state">電源オフ</strong>
+            <p id="hint">
+              電源ボタンを１回押すと、弱モードでスタート！
+            </p>
+          </div>
+
+          <ol aria-label="使い方">
+            <li><span>01</span>１回押しで弱</li>
+            <li><span>02</span>２回押しで強</li>
+            <li><span>03</span>長押しでオフ</li>
+          </ol>
+        </div>
+
+        <figure aria-label="横顔のラインアートと光美容器">
+
+          <div class="cover-note">
+            冬のおうち美容
+            <strong>01</strong>
+          </div>
+
+          <!-- Decorative illustrations -->
+          <svg class="desserts"
+               viewBox="0 0 640 520"
+               fill="none"
+               aria-hidden="true">
+            <g stroke="currentColor"
+               stroke-width="1.6"
+               stroke-linecap="round"
+               stroke-linejoin="round">
+
+              <!-- Strawberry shortcake -->
+              <path d="M45 400l47-21 38 22-48 17z
+                       M45 400v24l37 19 48-17v-25
+                       M82 418v25
+                       M46 413l36 18 47-17"/>
+
+              <path d="M76 389c-8-9 0-17 6-13
+                       8-8 18 1 8 10l-7 7z
+                       M82 375l-3-7m3 7 6-6"/>
+
+              <path d="M65 402l3-1
+                       m14 5 3-1
+                       m9-8 3-1"/>
+
+              <!-- Strawberry parfait -->
+              <path d="M548 143h54l-8 36
+                       q-4 15-19 15t-19-15z
+                       M575 194v19
+                       m-15 2h30
+                       M553 163q12-8 22 0t22 0"/>
+
+              <path d="M548 143q-2-12 12-16
+                       -2-11 13-12
+                       0-10 10-12
+                       -2 10 8 15
+                       12 5 11 25
+                       M588 116l10-25"/>
+
+              <!-- Bath bubbles -->
+              <circle cx="106" cy="83" r="9"/>
+              <circle cx="127" cy="65" r="4"/>
+              <circle cx="515" cy="373" r="12"/>
+              <circle cx="538" cy="354" r="6"/>
+              <circle cx="531" cy="398" r="4"/>
+
+              <!-- Tile decoration -->
+              <path d="M559 440h64
+                       m-64 15h64
+                       m-50-29v43
+                       m19-43v43
+                       m19-43v43"
+                    opacity=".55"/>
+            </g>
+          </svg>
+
+          <!-- Portrait illustration -->
+          <svg class="portrait"
+               viewBox="0 0 335 460"
+               fill="none"
+               aria-hidden="true">
+
+            <path d="M278 57
+              C232 83 202 129 151 151
+              C115 167 85 165 67 143
+              C57 131 53 117 51 107
+              C84 120 105 143 110 169
+              C116 196 103 221 94 239
+              C89 250 101 253 113 252
+              C125 251 127 260 127 270
+              C127 279 135 282 143 278
+              C152 273 163 273 172 275
+              C163 274 151 276 148 282
+              C145 289 151 295 158 294
+              C163 294 167 290 171 291
+              C182 295 180 310 182 323
+              C184 335 196 338 210 331
+              C243 315 263 278 274 245
+              C281 225 274 207 262 207
+              C247 207 239 228 245 247
+              C252 275 278 295 288 321
+              C307 370 255 379 203 387
+              C157 395 128 402 122 429
+              C118 440 118 450 119 458"
+              stroke="currentColor"
+              stroke-width="1.65"
+              stroke-linecap="round"
+              stroke-linejoin="round"/>
+          </svg>
+
+          <div class="product-light" aria-hidden="true"></div>
+
+          <!-- Interactive beauty device -->
+          <div class="device">
+            <div class="device-head" aria-hidden="true">
+              <div class="window"></div>
+            </div>
+
+            <div class="meter" aria-hidden="true">
+              <i></i>
+              <i></i>
+            </div>
+
+            <button
+              id="power"
+              type="button"
+              aria-label="電源ボタン。１回押すと弱、弱のときに素早く２回押すと強、長押しで電源オフ。">
+              ⏻
+            </button>
+
+            <span class="power-caption" aria-hidden="true">
+              ここを押して
+            </span>
+
+            <small>つるるん</small>
+          </div>
+
+          <div class="vertical-note">
+            お風呂あがりの美容時間
+          </div>
+
+          <div class="editors-note">
+            <strong>編集部メモ</strong>
+            冬色のページを着替えてみて。
+
+            <button id="direct" type="button">
+              <span id="direct-label">電源を入れる（弱）</span>
+              <span aria-hidden="true">↗</span>
+            </button>
+          </div>
+
+          <div class="cover-seal">
+            創刊25周年
+            <br>
+            特別記念号
+          </div>
+
+          <figcaption>
+            図１ ／ 冬のおうち美容
+          </figcaption>
+        </figure>
+      </div>
+
+      <footer>
+        <span>色でわかる、光美容器のモード切り替え</span>
+        <span class="page-number" aria-label="25ページ">25</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
